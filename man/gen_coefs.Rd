@@ -5,8 +5,8 @@
 \title{Generating random coefficients}
 \usage{
 gen_coefs(p, nonzero.frac = 1, family = c("uniform", "normal"),
-  max.effect.size = 1, min.effect.size = max.effect.size * 0.5, mean = 0,
-  sd = 1)
+  max.effect.size = 1, min.effect.size = max.effect.size * 0.5,
+  frac.positive = 0.5, mean = 0, sd = 1)
 }
 \arguments{
 \item{p}{integer. dimension of coefficients}
@@ -21,6 +21,9 @@ mean \code{mean} and standard deviation \code{sd}}
 \item{max.effect.size}{positive numeric value, maximum magnitude of coefficients if \code{family = "uniform"}}
 
 \item{min.effect.size}{positive numeric value, minimum magnitude of coefficients if \code{family = "uniform"}}
+
+\item{frac.positive}{positive numeric value between 0 and 1. If \code{family = "uniform"}, this is the
+fraction of coefficients which have positive values}
 
 \item{mean}{mean of random coefficients if \code{family = "normal"}}
 

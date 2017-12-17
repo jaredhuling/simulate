@@ -1,0 +1,49 @@
+---
+output: github_document
+---
+
+
+
+
+```{r setup, include=FALSE}
+library(knitr)
+opts_chunk$set(message = FALSE, warning=FALSE)
+```
+
+[![Build Status](https://travis-ci.org/jaredhuling/simulate.svg?branch=master)](https://travis-ci.org/jaredhuling/simulate)
+
+# Installing the 'simulate' package
+
+
+Install the development version using the **devtools** package:
+```{r, eval = FALSE}
+devtools::install_github("jaredhuling/simulate")
+```
+
+or by cloning and building using `R CMD INSTALL`
+
+# Quick Usage Overview
+
+Load the package:
+```{r, message = FALSE, warning = FALSE}
+library(simulate)
+```
+
+Simulate some data!
+```{r gen_data, echo = TRUE}
+set.seed(1)
+n.obs  <- 100
+x <- gen_covariates(n.obs, p.contin = 5, p.binary = 5, bin.prob = 0.25)
+
+head(x)
+```
+
+Simulate random coefficients:
+```{r gen_coefs, echo = TRUE}
+beta <- gen_coefs(10, nonzero.frac = 0.5, max.effect.size = 0.5,
+                  min.effect.size = 0.05)
+
+beta
+```
+
+

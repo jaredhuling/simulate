@@ -11,6 +11,8 @@
 #' mean \code{mean} and standard deviation \code{sd}
 #' @param max.effect.size positive numeric value, maximum magnitude of coefficients if \code{family = "uniform"}
 #' @param min.effect.size positive numeric value, minimum magnitude of coefficients if \code{family = "uniform"}
+#' @param frac.positive positive numeric value between 0 and 1. If \code{family = "uniform"}, this is the
+#' fraction of coefficients which have positive values
 #' @param mean mean of random coefficients if \code{family = "normal"}
 #' @param sd standard deviation of random coefficients if \code{family = "normal"}
 #' @export
@@ -24,6 +26,7 @@ gen_coefs <- function(p,
                       family = c("uniform", "normal"),
                       max.effect.size = 1,
                       min.effect.size = max.effect.size * 0.5,
+                      frac.positive = 0.5,
                       mean = 0,
                       sd = 1)
 {
@@ -49,8 +52,11 @@ gen_coefs <- function(p,
 
     if (family == "uniform")
     {
-        beta.nz <- runif(p.dep, min = min.effect.size, max = max.effect.size) *
-            (2 * rbinom(p.dep, 1, 0.5) - 1)
+        mult.fact <- rep(1, p.dep)
+        mult.fact[1:floor(frac.positive * p.dep)] <- -1
+        mult.fact <- mult.fact[sample.int(p.dep, p.dep)]
+
+        beta.nz <- runif(p.dep, min = min.effect.size, max = max.effect.size) * mult.fact
     } else
     {
         beta.nz <- rnorm(p.dep, mean = mean, sd = sd)
