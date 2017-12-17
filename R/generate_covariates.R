@@ -9,6 +9,8 @@
 #' @param rho numeric value between 0 and 1, correlation parameter for AR(1) covariance structure of
 #' continuous covariates
 #' @param bin.prob numeric value between 0 and 1. fraction of 1 values for binary covariates
+#' @importFrom stats rbinom rnorm runif var
+#' @importFrom MASS mvrnorm
 #' @export
 #' @examples
 #'
@@ -193,7 +195,7 @@ gen.data <- function(n,                               # training sample size
     if (!is.null(trt.int.effect.ints))
     {
         p.intint <- length(trt.int.effect.ints)
-        beta.trt.int <- gen.effects(p.intint, p.intint, max.effect.size.trt)
+        beta.trt.int <- gen_coefs(p.intint, 1, max.effect.size.trt)
         for (i in 1:p.intint)
         {
             delta.train <- delta.train +
