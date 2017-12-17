@@ -1,5 +1,19 @@
 
-
+#' Generating random covariates
+#'
+#' @description Generates a mix of binary and continuous (multivariate normal with AR(1) covariance) covariates
+#'
+#' @param n integer. sample size
+#' @param p.contin integer. number of continuous covariates
+#' @param p.binary integer. number of binary covariates
+#' @param rho numeric value between 0 and 1, correlation parameter for AR(1) covariance structure of
+#' continuous covariates
+#' @param bin.prob numeric value between 0 and 1. fraction of 1 values for binary covariates
+#' @export
+#' @examples
+#'
+#' x <- gen_covariates(10, p.contin = 3, p.binary = 2, rho = 0.9, bin.prob = 0.25)
+#' x
 gen_covariates <- function(n,
                            p.contin,
                            p.binary,
@@ -9,7 +23,9 @@ gen_covariates <- function(n,
 
     p.contin <- as.integer(p.contin[1])
     p.binary <- as.integer(p.binary[1])
-    n <- as.integer(n[1])
+    bin.prob <- as.double(bin.prob[1])
+    rho      <- as.double(rho[1])
+    n        <- as.integer(n[1])
 
     p.tot <- p.contin + p.binary
 
@@ -76,17 +92,7 @@ gen_covariates <- function(n,
     x
 }
 
-gen.effects <- function(p, p.dep, max.effect.size = 1)
-{
-    stopifnot(p.dep <= p)
-    beta.nz <- runif(p.dep, min = max.effect.size * 0.5, max = max.effect.size) *
-        (2 * rbinom(p.dep, 1, 0.5) - 1)
 
-    beta <- numeric(p)
-    beta[sample.int(p, p.dep)] <- beta.nz
-
-    beta
-}
 
 gen.trt.assignment <- function(x, indep = FALSE, beta, trt.frac = 0.5)
 {
@@ -134,21 +140,21 @@ gen.data <- function(n,                               # training sample size
     stopifnot(p.main.effects <= p.tot)
 
     # gen covariates
-    x        <- gen.cov(n,      p.contin, p.binary, rho, bin.prob)
-    x.test   <- gen.cov(n.test, p.contin, p.binary, rho, bin.prob)
+    x        <- gen_covariates(n,      p.contin, p.binary, rho, bin.prob)
+    x.test   <- gen_covariates(n.test, p.contin, p.binary, rho, bin.prob)
 
     # gen beta for propensity function
-    beta.propens <- gen.effects(p.tot, p.propens.dep, max.effect.size.propens)
+    beta.propens <- gen_coefs(p.tot, p.propens.dep/p.tot, max.effect.size.propens)
 
     # gen treatment assignment
     trt      <- 2 * gen.trt.assignment(x,      indep = propens.rct, beta.propens, trt.frac) - 1
     trt.test <- 2 * gen.trt.assignment(x.test, indep = propens.rct, beta.propens, trt.frac) - 1
 
     # gen beta for main effects
-    beta.main <- gen.effects(p.tot, p.main.effects, max.effect.size.main)
+    beta.main <- gen_coefs(p.tot, p.main.effects/p.tot, max.effect.size.main)
 
     # gen beta for trt int effects
-    beta.trt  <- gen.effects(p.tot, p.trt.effects, max.effect.size.trt)
+    beta.trt  <- gen_coefs(p.tot, p.trt.effects/p.tot, max.effect.size.trt)
 
 
     if (!is.null(trt.int.effect.ints))
@@ -200,11 +206,11 @@ gen.data <- function(n,                               # training sample size
 
     if (!is.null(trt.int.quadratic.effects))
     {
-        p.intquad <- length(trt.int.quadratic.effects)
-        beta.trt.quad <- gen.effects(p.intquad, p.intquad, max.effect.size.trt * 0.5)
+        p.intquad     <- length(trt.int.quadratic.effects)
+        beta.trt.quad <- gen_coefs(p.intquad, 1, max.effect.size.trt * 0.5)
 
-        delta.train <- delta.train + drop((x[,trt.int.quadratic.effects] ^ 2) %*%  beta.trt.quad)
-        delta.test  <- delta.test + drop((x.test[,trt.int.quadratic.effects] ^ 2) %*%  beta.trt.quad)
+        delta.train   <- delta.train + drop((x[,trt.int.quadratic.effects] ^ 2)      %*% beta.trt.quad)
+        delta.test    <- delta.test  + drop((x.test[,trt.int.quadratic.effects] ^ 2) %*% beta.trt.quad)
     }
 
     trt.optimal      <- 2 * (drop(x %*% beta.trt) > 0) - 1
