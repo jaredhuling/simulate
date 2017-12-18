@@ -15,13 +15,25 @@
 #' \code{n} if \code{indep = TRUE}.
 #' @param trt.frac fraction (between 0 and 1) of treatment values that take value \code{1}
 #' @param n positive integer value for sample size. Must be specified if \code{indep = TRUE}.
-#' @importFrom stats model.matrix
+#' @importFrom stats model.matrix glm binomial
 #' @export
 #' @examples
 #'
-#' beta <- gen_coefs(20, nonzero.frac = 0.5,
-#'                   max.effect.size = 0.5)
-#' beta
+#' x <- gen_covariates(50, p.contin = 6, p.binary = 4, rho = 0.9, bin.prob = 0.25)
+#'
+#' beta <- gen_coefs(11, nonzero.frac = 0.85,
+#'                   max.effect.size = 0.25)
+#'
+#' trt <- gen_trt(~ ., data = data.frame(x), beta = beta)
+#'
+#' trt
+#'
+#' summary(glm(trt ~ x, family = binomial()))
+#'
+#' trt <- gen_trt(indep = TRUE, trt.frac = 0.25, n = 500)
+#'
+#' table(trt) / length(trt)
+#'
 gen_trt <- function(formula,
                     data,
                     beta,

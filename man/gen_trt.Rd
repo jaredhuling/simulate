@@ -30,7 +30,19 @@ Generates random treatment assignments from a specified logistic model
 }
 \examples{
 
-beta <- gen_coefs(20, nonzero.frac = 0.5,
-                  max.effect.size = 0.5)
-beta
+x <- gen_covariates(50, p.contin = 6, p.binary = 4, rho = 0.9, bin.prob = 0.25)
+
+beta <- gen_coefs(11, nonzero.frac = 0.85,
+                  max.effect.size = 0.25)
+
+trt <- gen_trt(~ ., data = data.frame(x), beta = beta)
+
+trt
+
+summary(glm(trt ~ x, family = binomial()))
+
+trt <- gen_trt(indep = TRUE, trt.frac = 0.25, n = 500)
+
+table(trt) / length(trt)
+
 }
