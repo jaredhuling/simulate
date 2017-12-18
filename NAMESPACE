@@ -2,7 +2,9 @@
 
 export(gen_coefs)
 export(gen_covariates)
+export(gen_trt)
 importFrom(MASS,mvrnorm)
+importFrom(stats,model.matrix)
 importFrom(stats,rbinom)
 importFrom(stats,rnorm)
 importFrom(stats,runif)

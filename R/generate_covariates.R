@@ -96,23 +96,7 @@ gen_covariates <- function(n,
 
 
 
-gen.trt.assignment <- function(x, indep = FALSE, beta, trt.frac = 0.5)
-{
-    if (indep)
-    {
-        trt <- rbinom(NROW(x), 1, trt.frac)
-    } else
-    {
-        p <- NCOL(x)
-        stopifnot(length(beta) == p)
 
-        prob <- 1 / (1 + exp(-drop(x %*% beta)))
-
-        trt <- rbinom(NROW(x), 1, prob)
-    }
-
-    trt
-}
 
 gen.data <- function(n,                               # training sample size
                      n.test,                          # testing sample size
@@ -146,11 +130,17 @@ gen.data <- function(n,                               # training sample size
     x.test   <- gen_covariates(n.test, p.contin, p.binary, rho, bin.prob)
 
     # gen beta for propensity function
-    beta.propens <- gen_coefs(p.tot, p.propens.dep/p.tot, max.effect.size.propens)
+
+    trt.int.coef <- log(trt.frac / (1 - trt.frac))
+
+    beta.propens <- c(trt.int.coef,
+                      gen_coefs(p.tot, p.propens.dep/p.tot, max.effect.size.propens))
 
     # gen treatment assignment
-    trt      <- 2 * gen.trt.assignment(x,      indep = propens.rct, beta.propens, trt.frac) - 1
-    trt.test <- 2 * gen.trt.assignment(x.test, indep = propens.rct, beta.propens, trt.frac) - 1
+    trt      <- 2 * gen_trt(~ ., data.frame(x),
+                            beta.propens, indep = propens.rct, trt.frac, nrow(x)) - 1
+    trt.test <- 2 * gen_trt(~ ., data.frame(x.test),
+                            beta.propens, indep = propens.rct, trt.frac, nrow(x.test)) - 1
 
     # gen beta for main effects
     beta.main <- gen_coefs(p.tot, p.main.effects/p.tot, max.effect.size.main)
